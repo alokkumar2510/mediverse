@@ -1,0 +1,65 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Secrets — NEVER commit real .env files ───────────────────────────────────
+.env
+.env.local
+.env.*.local
+# Keep .env.production (contains defaults, NOT real secrets in repo)
+# Real secrets go to Azure App Settings + GitHub Secrets
+
+# ── Local SQLite database ─────────────────────────────────────────────────────
+*.db
+*.sqlite3
+backend/mediverse.db
+
+# ── Large ML model files ──────────────────────────────────────────────────────
+ml/checkpoints/
+ml/exports/
+ml/datasets/           # Training datasets — too large for git (use DVC or manual download)
+*.onnx
+*.pt
+*.pkl
+*.h5
+*.pth
+*.dcm                  # DICOM files — binary medical images
+
+# ── Node ──────────────────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+
+# ── Test artifacts ────────────────────────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# ── Infra secrets ─────────────────────────────────────────────────────────────
+infra/azure/*.secret
+*.pem
+*.key
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp

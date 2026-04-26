@@ -1,0 +1,25 @@
+{
+  "model_name": "ResNet1D-ECG",
+  "version": "1.0",
+  "description": "1D CNN for ECG rhythm classification (PTB-XL NORM/MI/STTC/CD/HYP)",
+  "input_shape": [
+    1,
+    1000
+  ],
+  "sample_rate_hz": 100,
+  "classes": [
+    "Normal Sinus Rhythm",
+    "Myocardial Infarction",
+    "ST/T Change",
+    "Conduction Disturbance",
+    "Hypertrophy"
+  ],
+  "class_indices": {
+    "Normal Sinus Rhythm": 0,
+    "Myocardial Infarction": 1,
+    "ST/T Change": 2,
+    "Conduction Disturbance": 3,
+    "Hypertrophy": 4
+  },
+  "recommended_threshold": 0.6
+}

@@ -1,0 +1,52 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# MediVerse AI — Render deployment spec (fallback if Azure is unavailable)
+# Deploy from: Render dashboard → New → Blueprint → point to this file
+# Docs: https://render.com/docs/blueprint-spec
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend API ──────────────────────────────────────────────────────────────
+  - type: web
+    name: mediverse-api
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    region: oregon             # Closest to India: oregon / singapore
+    plan: starter              # $7/month — upgrade to standard for production
+    healthCheckPath: /health
+    autoDeploy: true           # Deploy on git push to main
+
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: WORKERS
+        value: "2"             # Render Starter = 512MB RAM — keep workers low
+      - key: PORT
+        value: "8000"
+
+      # ── Set these as "Secret" in Render dashboard, NOT here ─────────────────
+      - key: DATABASE_URL
+        sync: false            # Render will prompt you to fill this in dashboard
+      - key: DATABASE_URL_SYNC
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: REFRESH_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        value: "https://mediverse.alokkumarsahu.in"
+
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 80
+      targetCPUPercent: 70
+
+  # ── Optional: Redis (for rate limit state and caching) ──────────────────────
+  # Uncomment when you need Redis (Render Redis is $10/month on Starter plan)
+  # - type: redis
+  #   name: mediverse-redis
+  #   plan: starter
+  #   region: oregon
+  #   maxmemoryPolicy: allkeys-lru

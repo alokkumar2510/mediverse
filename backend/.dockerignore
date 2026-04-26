@@ -1,0 +1,57 @@
+# ── Python artifacts ──────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Dev/local files ───────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Local database (use Supabase in prod) ────────────────────────────────────
+*.db
+*.sqlite3
+mediverse.db
+
+# ── ML model files (large — mounted separately or downloaded at startup) ──────
+ml_models/
+*.onnx
+*.pt
+*.h5
+*.pkl
+*.pth
+
+# ── Test files ────────────────────────────────────────────────────────────────
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Dev tooling ───────────────────────────────────────────────────────────────
+.ruff_cache/
+pyproject.toml
+
+# ── Git & IDE ─────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# ── Uploads (ephemeral in Azure — use Cloudinary) ─────────────────────────────
+uploads/
+tmp/
+
+# ── Docs ─────────────────────────────────────────────────────────────────────
+README.md
+*.md
+docs/

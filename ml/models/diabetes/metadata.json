@@ -1,0 +1,1 @@
+﻿{"module":"diabetes","version":"1.0.0","model_type":"xgboost","input_shape":"[1,6]","accuracy":"TBD","dataset":"PIMA","exported_at":null}
