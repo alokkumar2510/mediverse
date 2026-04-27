@@ -27,7 +27,7 @@ const footerLinks = {
 const socials = [
   { icon: Github,   href: "https://github.com/alokkumar2510",   label: "GitHub"   },
   { icon: Twitter,  href: "https://twitter.com/alok_chintu",    label: "Twitter"  },
-  { icon: Linkedin, href: "https://linkedin.com/",              label: "LinkedIn" },
+  { icon: Linkedin, href: "https://linkedin.com/in/alok-kumar-sahu", label: "LinkedIn" },
 ];
 
 export function Footer() {
