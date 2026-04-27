@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Activity, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2,
@@ -67,6 +67,18 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm,  setShowConfirm]  = useState(false);
   const [serverError,  setServerError]  = useState<string | null>(null);
+  const [isSlowLoad, setIsSlowLoad] = useState(false);
+
+  // Show "waking up" message if backend takes > 4s (Render cold start)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLoading) {
+      timer = setTimeout(() => setIsSlowLoad(true), 4000);
+    } else {
+      setIsSlowLoad(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const {
     register,
@@ -188,6 +200,13 @@ export default function SignupPage() {
             <div className="flex items-center gap-2 bg-destructive/8 border border-destructive/20 rounded-xl px-4 py-3 mb-5 text-destructive text-[0.8rem]">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {serverError}
+            </div>
+          )}
+
+          {isSlowLoad && !serverError && (
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 mb-5 text-amber-600 text-[0.8rem] animate-pulse">
+              <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+              Waking up secure backend... this may take up to 50 seconds.
             </div>
           )}
 

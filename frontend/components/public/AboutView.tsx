@@ -64,7 +64,7 @@ const founder = {
       icon: Globe,
       label: "Platform",
       handle: "mediverse.alokkumarsahu.in",
-      href: "https://mediverse.alokkumarsahu.in",
+      href: "https://alokkumarsahu.in",
       color: "hsl(158,50%,44%)",
     },
   ],
@@ -194,7 +194,7 @@ export function AboutView() {
                   className="p-6 rounded-2xl border border-border/60 bg-card hover:shadow-md transition-shadow"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl mb-5"
-                       style={{ background: `${color}15` }}>
+                    style={{ background: `${color}15` }}>
                     <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.8} />
                   </div>
                   <h3 className="font-semibold text-[0.95rem] mb-2">{title}</h3>
@@ -269,7 +269,7 @@ export function AboutView() {
                       className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent transition-colors group"
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0"
-                           style={{ background: `${color}18` }}>
+                        style={{ background: `${color}18` }}>
                         <Icon className="h-4 w-4" style={{ color }} strokeWidth={1.8} />
                       </div>
                       <div className="min-w-0 flex-1">

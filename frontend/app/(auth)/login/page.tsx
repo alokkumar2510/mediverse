@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Activity, Eye, EyeOff, Loader2, AlertCircle, CheckCircle,
@@ -28,6 +28,17 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [serverError,  setServerError]  = useState<string | null>(null);
+  const [isSlowLoad, setIsSlowLoad] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLoading) {
+      timer = setTimeout(() => setIsSlowLoad(true), 4000);
+    } else {
+      setIsSlowLoad(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -198,7 +209,6 @@ function LoginForm() {
             </div>
           )}
 
-          {/* Server error */}
           {serverError && (
             <div style={{
               display: "flex", alignItems: "center", gap: "0.5rem",
@@ -210,6 +220,20 @@ function LoginForm() {
             }}>
               <AlertCircle size={15} />
               {serverError}
+            </div>
+          )}
+
+          {isSlowLoad && !serverError && (
+            <div className="animate-pulse" style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              background: "rgba(245,158,11,0.08)",
+              border: "1px solid rgba(245,158,11,0.2)",
+              borderRadius: "0.75rem", padding: "0.75rem 1rem",
+              marginBottom: "1.25rem",
+              color: "hsl(var(--amber-600))", fontSize: "0.82rem",
+            }}>
+              <Loader2 size={15} className="animate-spin" />
+              Waking up secure backend... this may take up to 50 seconds.
             </div>
           )}
 
