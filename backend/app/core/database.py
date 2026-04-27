@@ -35,6 +35,7 @@ def _engine_kwargs() -> dict:
         "max_overflow": settings.DB_MAX_OVERFLOW,
         "pool_timeout": settings.DB_POOL_TIMEOUT,
         "pool_recycle": 3600,
+        "prepared_statement_cache_size": 0,
         "connect_args": {
             "statement_cache_size": 0,
         },
