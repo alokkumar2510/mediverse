@@ -82,6 +82,9 @@ async function handle401(error: AxiosError) {
     const newAccessToken: string = data.access_token;
     const newRefreshToken: string = data.refresh_token ?? refreshToken;
     setTokens(newAccessToken, newRefreshToken);
+    // Keep the cookie in sync so the Edge middleware sees the new token
+    const { updateAuthCookies } = await import("@/lib/auth");
+    updateAuthCookies(newAccessToken);
     processQueue(null, newAccessToken);
     original.headers.Authorization = `Bearer ${newAccessToken}`;
     return api(original);
