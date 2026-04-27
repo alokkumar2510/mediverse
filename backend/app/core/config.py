@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "https://mediverse.alokkumarsahu.in",
+        "https://smartx.alokkumarsahu.in",
     ]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
