@@ -1,13 +1,14 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const isProd = process.env.NODE_ENV === "production";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://api.mediverse.alokkumarsahu.in" : "http://localhost:8000");
 
 // ─── Primary API instance ───────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
-  timeout: 30_000,
+  timeout: 120_000, // Increased to 120s for Render cold starts
 });
 
 // ─── Multipart instance (file uploads) ──────────────────────────────────────

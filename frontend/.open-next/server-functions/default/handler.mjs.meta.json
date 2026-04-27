@@ -2329,7 +2329,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.js": {
-      "bytes": 272758,
+      "bytes": 272760,
       "imports": [
         {
           "path": "fs",
@@ -3784,8 +3784,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js": {
-      "bytes": 9721,
+    ".open-next/server-functions/default/.next/server/app/(public)/pricing/page.js": {
+      "bytes": 9715,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/client/components/action-async-storage.external.js",
@@ -3815,8 +3815,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/(public)/pricing/page.js": {
-      "bytes": 9715,
+    ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js": {
+      "bytes": 9721,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/client/components/action-async-storage.external.js",
@@ -4149,8 +4149,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js": {
-      "bytes": 22443,
+    ".open-next/server-functions/default/.next/server/app/admin/analytics/page.js": {
+      "bytes": 16845,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/client/components/action-async-storage.external.js",
@@ -4250,8 +4250,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/admin/analytics/page.js": {
-      "bytes": 16845,
+    ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js": {
+      "bytes": 22443,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/client/components/action-async-storage.external.js",
@@ -5901,14 +5901,14 @@
           "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(public)\\features\\page.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js",
-          "kind": "require-call",
-          "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(public)\\contact\\page.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/(public)/pricing/page.js",
           "kind": "require-call",
           "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(public)\\pricing\\page.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js",
+          "kind": "require-call",
+          "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(public)\\contact\\page.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/(public)/privacy/page.js",
@@ -5926,14 +5926,14 @@
           "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(protected)\\xray\\page.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js",
-          "kind": "require-call",
-          "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(protected)\\ecg\\page.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/admin/analytics/page.js",
           "kind": "require-call",
           "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\admin\\analytics\\page.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js",
+          "kind": "require-call",
+          "original": "E:\\Mediverse\\frontend\\.open-next\\server-functions\\default\\.next\\server\\app\\(protected)\\ecg\\page.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/(public)/about/page.js",
@@ -9640,7 +9640,7 @@
           "bytesInOutput": 586
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.js": {
-          "bytesInOutput": 246046
+          "bytesInOutput": 246048
         },
         ".open-next/server-functions/default/node_modules/next/dist/client/components/action-async-storage-instance.js": {
           "bytesInOutput": 754
@@ -9729,11 +9729,11 @@
         ".open-next/server-functions/default/.next/server/app/(public)/features/page.js": {
           "bytesInOutput": 29703
         },
-        ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js": {
-          "bytesInOutput": 10029
-        },
         ".open-next/server-functions/default/.next/server/app/(public)/pricing/page.js": {
           "bytesInOutput": 10023
+        },
+        ".open-next/server-functions/default/.next/server/app/(public)/contact/page.js": {
+          "bytesInOutput": 10029
         },
         ".open-next/server-functions/default/.next/server/app/(public)/privacy/page.js": {
           "bytesInOutput": 21026
@@ -9744,11 +9744,11 @@
         ".open-next/server-functions/default/.next/server/app/(protected)/xray/page.js": {
           "bytesInOutput": 2724
         },
-        ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js": {
-          "bytesInOutput": 23054
-        },
         ".open-next/server-functions/default/.next/server/app/admin/analytics/page.js": {
           "bytesInOutput": 17365
+        },
+        ".open-next/server-functions/default/.next/server/app/(protected)/ecg/page.js": {
+          "bytesInOutput": 23054
         },
         ".open-next/server-functions/default/.next/server/app/(public)/about/page.js": {
           "bytesInOutput": 10011
@@ -9976,7 +9976,7 @@
           "bytesInOutput": 65484
         }
       },
-      "bytes": 3184827
+      "bytes": 3184829
     }
   }
 }

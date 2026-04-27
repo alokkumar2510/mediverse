@@ -36,7 +36,6 @@ def _engine_kwargs() -> dict:
         "pool_timeout": settings.DB_POOL_TIMEOUT,
         "pool_recycle": 3600,
         "connect_args": {
-            "prepared_statement_cache_size": 0,
             "statement_cache_size": 0,
         },
     }
