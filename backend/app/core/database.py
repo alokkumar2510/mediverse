@@ -35,15 +35,17 @@ def _engine_kwargs() -> dict:
         "max_overflow": settings.DB_MAX_OVERFLOW,
         "pool_timeout": settings.DB_POOL_TIMEOUT,
         "pool_recycle": 3600,
-        "prepared_statement_cache_size": 0,
         "connect_args": {
             "statement_cache_size": 0,
         },
     }
 
+_db_url = settings.DATABASE_URL
+if not _db_url.lower().startswith("sqlite"):
+    _db_url += "&prepared_statement_cache_size=0" if "?" in _db_url else "?prepared_statement_cache_size=0"
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _db_url,
     echo=settings.DEBUG,
     **_engine_kwargs(),
 )
