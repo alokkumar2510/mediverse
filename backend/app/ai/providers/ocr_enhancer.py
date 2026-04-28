@@ -1,14 +1,14 @@
 """
-MediVerse AI — OCR + Gemini Prescription Enhancement Provider
+MediVerse AI — OCR + AI Prescription Enhancement Provider
 =============================================================
 Pipeline:
   1. Existing EasyOCR/Tesseract engine extracts raw text (unchanged)
-  2. Gemini cleans noisy OCR text and extracts structured prescription data
+  2. Advanced AI cleans noisy OCR text and extracts structured prescription data
      (medicine names, dosages, frequencies, doctor info, dates)
-  3. Fallback to existing prescription_parser.py if Gemini fails
+  3. Fallback to existing prescription_parser.py if AI fails
 
 Swap path:
-  Replace _call_gemini_ocr() with a fine-tuned prescription-NER model.
+  Replace AI call with a fine-tuned prescription-NER model.
   The OCR image extraction layer stays the same.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from app.ai.gemini_client import get_client
+from app.ai.fallback_provider import get_ai_provider
 from app.ai.provider_types import MEDICAL_DISCLAIMER
 
 logger = logging.getLogger("mediverse.ai.ocr")
@@ -50,10 +50,10 @@ async def enhance_prescription_ocr(
     ocr_confidence: float = 0.0,
 ) -> dict | None:
     """
-    Send OCR-extracted text to Gemini for structured prescription parsing.
+    Send OCR-extracted text to Advanced AI for structured prescription parsing.
 
     Returns dict matching OcrPrescriptionResponse schema,
-    or None if Gemini fails (caller falls back to local parser).
+    or None if AI fails (caller falls back to local parser).
     """
     if not raw_text.strip():
         return None
@@ -82,18 +82,18 @@ Do NOT add medicines that are not in the text. Do NOT hallucinate.
 Respond ONLY in JSON format."""
 
     try:
-        client = get_client()
+        client = get_ai_provider()
         resp = await client.generate_json(prompt, schema_hint=_SCHEMA)
 
         if resp.data:
             d = resp.data
             logger.info(
-                "Gemini OCR enhancement: %d medicines extracted (latency=%.0fms)",
+                "AI OCR enhancement: %d medicines extracted (latency=%.0fms)",
                 len(d.get("medicines", [])), resp.latency_ms,
             )
             return d
 
     except Exception as exc:
-        logger.warning("Gemini OCR enhancement failed, using local parser: %s", exc)
+        logger.warning("AI OCR enhancement failed, using local parser: %s", exc)
 
     return None

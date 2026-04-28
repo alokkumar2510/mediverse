@@ -1,7 +1,7 @@
 """
-MediVerse AI — Skin Analysis Service (Gemini Vision)
+MediVerse AI — Skin Analysis Service (AI Vision)
 ====================================================
-Replaces ONNX EfficientNet-B3 with Gemini Vision provider temporarily.
+Replaces ONNX EfficientNet-B3 with AI Vision provider temporarily.
 Service interface (analyze_skin) is UNCHANGED.
 """
 from __future__ import annotations
@@ -30,7 +30,7 @@ async def analyze_skin(
     """
     Full pipeline:
       1. Read & validate bytes
-      2. Run Gemini Vision inference
+      2. Run AI Vision inference
       3. Persist report to DB
       4. Return structured response
     """
@@ -95,7 +95,7 @@ async def analyze_skin(
     # 4. Build response
     all_probs = []
     for c in result.conditions:
-        # Conditions list from Gemini has {"name": ..., "probability": ...}
+        # Conditions list from AI has {"name": ..., "probability": ...}
         code = _label_to_code(c.get("name", "nv"))
         all_probs.append(SkinConditionProb(
             code=code,
@@ -117,7 +117,7 @@ async def analyze_skin(
         low_confidence      = result.confidence < 65,
         image_quality       = "unknown",
         quality_warnings    = quality_warnings,
-        heatmap_b64         = None,   # Gemini doesn't generate heatmaps
+        heatmap_b64         = None,   # AI doesn't generate heatmaps
         image_hash          = "",
         tta_uncertainty     = 0.0,
         model_version       = result.model_version,

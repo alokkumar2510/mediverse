@@ -1,7 +1,7 @@
 """
-MediVerse AI — Diabetes Service (Gemini + Rule Engine Hybrid)
+MediVerse AI — Diabetes Service (AI + Rule Engine Hybrid)
 =============================================================
-Replaces local XGBoost model with temporary Gemini AI provider.
+Replaces local XGBoost model with temporary AI provider.
 Service interface is UNCHANGED — only the AI backend is swapped.
 
 To restore local model:
@@ -29,7 +29,7 @@ async def predict_diabetes(
     """
     Full diabetes prediction pipeline:
     1. Build feature dict from request
-    2. Run AI inference (Gemini + Rule Engine)
+    2. Run AI inference (AI + Rule Engine)
     3. Persist report to DB
     4. Return rich response
     """

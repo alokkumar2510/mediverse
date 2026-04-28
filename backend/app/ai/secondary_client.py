@@ -1,12 +1,12 @@
 """
-MediVerse AI — Gemini API Client  (google-genai SDK)
+MediVerse AI — Secondary AI Client  (google-genai SDK)
 =====================================================
 Uses the new `google.genai` package (replaces deprecated `google.generativeai`).
 
 Features:
   • Singleton per-process (no re-auth overhead)
   • Configurable timeout + retry with exponential back-off
-  • Rate-limit guard (GEMINI_RPM env var, default 15 RPM for free tier)
+  • Rate-limit guard (SECONDARY_AI_RPM env var, default 15 RPM for free tier)
   • Structured JSON response parsing (strips markdown fences)
   • Vision (multimodal) support for Skin / X-ray / ECG image modules
   • Per-call token cost estimate in response metadata
@@ -26,30 +26,30 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
-logger = logging.getLogger("mediverse.gemini")
+logger = logging.getLogger("mediverse.ai.secondary")
 
 # ── Config from environment ────────────────────────────────────────────────────
 from app.core.config import settings
 
-_API_KEY     = settings.GEMINI_API_KEY
-_MODEL_TEXT  = settings.GEMINI_MODEL_TEXT
-_MODEL_VIS   = settings.GEMINI_MODEL_VISION
-_MAX_TOKENS  = settings.GEMINI_MAX_OUTPUT_TOKENS
-_TEMP        = settings.GEMINI_TEMPERATURE
-_TIMEOUT     = settings.GEMINI_TIMEOUT_SEC
-_MAX_RETRIES = settings.GEMINI_MAX_RETRIES
-_RPM_LIMIT   = settings.GEMINI_RPM
+_API_KEY     = settings.SECONDARY_AI_API_KEY
+_MODEL_TEXT  = settings.SECONDARY_AI_MODEL_TEXT
+_MODEL_VIS   = settings.SECONDARY_AI_MODEL_VISION
+_MAX_TOKENS  = settings.SECONDARY_AI_MAX_OUTPUT_TOKENS
+_TEMP        = settings.SECONDARY_AI_TEMPERATURE
+_TIMEOUT     = settings.SECONDARY_AI_TIMEOUT_SEC
+_MAX_RETRIES = settings.SECONDARY_AI_MAX_RETRIES
+_RPM_LIMIT   = settings.SECONDARY_AI_RPM
 
 
 @dataclass
-class GeminiResponse:
+class AIResponse:
     text: str
     data: dict | None = None         # parsed JSON (if requested)
     model: str = ""
     prompt_tokens: int = 0
     output_tokens: int = 0
     latency_ms: float = 0.0
-    ai_provider: str = "gemini"
+    ai_provider: str = "secondary_ai"
 
     @property
     def cost_estimate_usd(self) -> float:
@@ -78,13 +78,13 @@ class _RateLimiter:
             self._last = time.monotonic()
 
 
-class GeminiClient:
-    """Singleton Gemini client (google-genai SDK) with retry + rate-limit."""
+class SecondaryAIClient:
+    """Singleton secondary AI client (google-genai SDK) with retry + rate-limit."""
 
-    _instance:    "GeminiClient | None" = None
+    _instance:    "SecondaryAIClient | None" = None
     _initialized: bool = False
 
-    def __new__(cls) -> "GeminiClient":
+    def __new__(cls) -> "SecondaryAIClient":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -93,11 +93,11 @@ class GeminiClient:
         if self._initialized:
             return
         if not _API_KEY:
-            logger.warning("GEMINI_API_KEY not set — all Gemini calls will fail.")
+            logger.warning("SECONDARY_AI_API_KEY not set — all AI calls will fail.")
         self._client = genai.Client(api_key=_API_KEY)
         self._rl     = _RateLimiter(_RPM_LIMIT)
         self._initialized = True
-        logger.info("✅ Gemini client ready (text=%s  vision=%s)", _MODEL_TEXT, _MODEL_VIS)
+        logger.info("✅ AI client ready (text=%s  vision=%s)", _MODEL_TEXT, _MODEL_VIS)
 
     # ── Public helpers ──────────────────────────────────────────────────────────
 
@@ -106,14 +106,14 @@ class GeminiClient:
         prompt: str,
         *,
         schema_hint: str = "",
-    ) -> GeminiResponse:
+    ) -> AIResponse:
         """Text prompt → expects JSON response."""
         full = prompt
         if schema_hint:
             full += f"\n\nRespond ONLY with a valid JSON object matching this schema:\n{schema_hint}"
         return await self._call(_MODEL_TEXT, [full], json_mode=True)
 
-    async def generate_text(self, prompt: str) -> GeminiResponse:
+    async def generate_text(self, prompt: str) -> AIResponse:
         """Text prompt → plain text response."""
         return await self._call(_MODEL_TEXT, [prompt], json_mode=False)
 
@@ -124,7 +124,7 @@ class GeminiClient:
         mime_type: str = "image/jpeg",
         *,
         schema_hint: str = "",
-    ) -> GeminiResponse:
+    ) -> AIResponse:
         """Image + text prompt → expects JSON response (multimodal)."""
         full = prompt
         if schema_hint:
@@ -142,7 +142,7 @@ class GeminiClient:
         contents: list[Any],
         *,
         json_mode: bool,
-    ) -> GeminiResponse:
+    ) -> AIResponse:
         await self._rl.acquire()
 
         config = types.GenerateContentConfig(
@@ -183,7 +183,7 @@ class GeminiClient:
                         logger.warning("JSON parse failed: %s | raw: %.200s", e, raw_text)
 
                 usage = getattr(resp, "usage_metadata", None)
-                return GeminiResponse(
+                return AIResponse(
                     text          = raw_text,
                     data          = parsed,
                     model         = model,
@@ -196,34 +196,34 @@ class GeminiClient:
                 if exc.code in (429, 503):
                     wait = 2 ** attempt
                     logger.warning(
-                        "Gemini rate-limited/unavailable (attempt %d/%d) — retry in %ds: %s",
+                        "AI rate-limited/unavailable (attempt %d/%d) — retry in %ds: %s",
                         attempt, _MAX_RETRIES, wait, exc,
                     )
                     last_exc = exc
                     await asyncio.sleep(wait)
                 else:
-                    logger.exception("Gemini API error (attempt %d): %s", attempt, exc)
+                    logger.exception("AI API error (attempt %d): %s", attempt, exc)
                     last_exc = exc
                     break
 
             except asyncio.TimeoutError:
                 logger.warning(
-                    "Gemini timeout (attempt %d/%d, %.0fs)", attempt, _MAX_RETRIES, _TIMEOUT
+                    "AI timeout (attempt %d/%d, %.0fs)", attempt, _MAX_RETRIES, _TIMEOUT
                 )
-                last_exc = TimeoutError(f"Gemini timed out after {_TIMEOUT}s")
+                last_exc = TimeoutError(f"AI timed out after {_TIMEOUT}s")
                 await asyncio.sleep(1)
 
             except Exception as exc:
-                logger.exception("Gemini unexpected error (attempt %d): %s", attempt, exc)
+                logger.exception("AI unexpected error (attempt %d): %s", attempt, exc)
                 last_exc = exc
                 break   # don't retry unknown errors
 
         raise RuntimeError(
-            f"Gemini call failed after {_MAX_RETRIES} attempts: {last_exc}"
+            f"AI call failed after {_MAX_RETRIES} attempts: {last_exc}"
         ) from last_exc
 
 
 # ── Module-level singleton accessor ───────────────────────────────────────────
-def get_client() -> GeminiClient:
-    """Return the singleton GeminiClient. Thread-safe (asyncio loop required)."""
-    return GeminiClient()
+def get_client() -> SecondaryAIClient:
+    """Return the singleton SecondaryAIClient. Thread-safe (asyncio loop required)."""
+    return SecondaryAIClient()

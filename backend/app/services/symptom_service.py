@@ -1,7 +1,7 @@
 """
-MediVerse AI — Symptom Checker Service (Gemini Primary)
+MediVerse AI — Symptom Checker Service (AI Primary)
 ========================================================
-Replaces stub implementation with Gemini-powered triage.
+Replaces stub implementation with AI-powered triage.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ async def check_symptoms(
     db: AsyncSession, user: User, body: SymptomCheckRequest
 ) -> SymptomCheckResponse:
     """
-    Gemini-powered symptom triage.
+    AI-powered symptom triage.
     Returns SymptomCheckResponse with conditions, urgency, specialist.
     """
     try:

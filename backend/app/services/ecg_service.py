@@ -1,7 +1,7 @@
 """
-MediVerse AI — ECG Analysis Service (Signal Analysis + Gemini)
+MediVerse AI — ECG Analysis Service (Signal Analysis + AI)
 ==============================================================
-Replaces ONNX ResNet1D with signal features + Gemini interpretation.
+Replaces ONNX ResNet1D with signal features + AI interpretation.
 Service interface (analyze_ecg) is UNCHANGED.
 """
 from __future__ import annotations
@@ -62,7 +62,7 @@ async def analyze_ecg(
     """
     Full ECG analysis pipeline:
     1. Parse file → numpy signal
-    2. Run signal analysis + Gemini interpretation
+    2. Run signal analysis + AI interpretation
     3. Build response
     4. Save report
     """

@@ -124,22 +124,19 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health/ai", tags=["Health"])
     async def health_ai() -> dict[str, Any]:
-        """Check Gemini AI provider availability for all modules."""
+        """Check AI provider availability for all modules."""
         import os
-        key = os.environ.get("GEMINI_API_KEY", "")
+        key = os.environ.get("NVIDIA_NIM_API_KEY", "")
         configured = bool(key)
         modules = ["diabetes", "symptom", "skin", "xray", "ecg", "ocr"]
         return {
             "status":          "ready" if configured else "degraded",
-            "provider":        "Google Gemini 2.0 Flash",
+            "provider":        "NVIDIA NIM (Fallback to Secondary AI)",
             "mode":            "temporary_ai_bridge",
-            "gemini_api_key":  "configured" if configured else "MISSING — set GEMINI_API_KEY env var",
-            "model_text":      os.environ.get("GEMINI_MODEL_TEXT", "gemini-2.0-flash"),
-            "model_vision":    os.environ.get("GEMINI_MODEL_VISION", "gemini-2.0-flash"),
-            "rpm_limit":       int(os.environ.get("GEMINI_RPM", "15")),
+            "api_key":         "configured" if configured else "MISSING",
             "modules_powered": modules,
-            "fallback":        "rule-based heuristics when Gemini unavailable",
-            "custom_models":   "pending training — will replace Gemini when ready",
+            "fallback":        "rule-based heuristics when AI unavailable",
+            "custom_models":   "pending training — will replace AI when ready",
         }
 
 

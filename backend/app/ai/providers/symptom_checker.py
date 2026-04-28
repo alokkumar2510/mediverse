@@ -1,15 +1,15 @@
 """
-MediVerse AI — Symptom Checker Provider (Gemini Primary)
+MediVerse AI — Symptom Checker Provider (AI Primary)
 =========================================================
-Gemini is the primary engine for symptom triage.
+Advanced AI is the primary engine for symptom triage.
 
-Swap path: replace _call_gemini() with your NLP/transformer model.
+Swap path: replace _call_ai() with your NLP/transformer model.
 """
 from __future__ import annotations
 
 import logging
 
-from app.ai.gemini_client import get_client
+from app.ai.fallback_provider import get_ai_provider
 from app.ai.provider_types import ProviderResult, MEDICAL_DISCLAIMER
 
 logger = logging.getLogger("mediverse.ai.symptom")
@@ -30,7 +30,7 @@ _SCHEMA = """{
 
 async def check_symptoms(text: str, age: int | None = None, gender: str | None = None) -> ProviderResult:
     """
-    Analyse free-text symptoms using Gemini.
+    Analyse free-text symptoms using Advanced AI.
     Returns ProviderResult with conditions, urgency, specialist recommendation.
     """
     demo_ctx = ""
@@ -58,7 +58,7 @@ Do NOT provide diagnoses — this is a triage tool.
 Respond ONLY in JSON format."""
 
     try:
-        client = get_client()
+        client = get_ai_provider()
         resp = await client.generate_json(prompt, schema_hint=_SCHEMA)
 
         if resp.data:
@@ -77,6 +77,9 @@ Respond ONLY in JSON format."""
                 suggestions.append(f"📅 {when}")
             if red_flags:
                 suggestions.insert(0, f"🚨 Red flags: {', '.join(red_flags)}")
+                
+            ai_prov = getattr(resp, "ai_provider", "advanced_ai")
+            ai_prov_label = "NVIDIA NIM (Temporary)" if ai_prov == "nim" else "AI Inference (Temporary)"
 
             return ProviderResult(
                 primary_label=conditions[0]["name"] if conditions else "Unspecified",
@@ -85,19 +88,19 @@ Respond ONLY in JSON format."""
                 conditions=conditions,
                 factors=[{"factor": "Urgency", "value": str(urgency), "impact": urgency_label}],
                 suggestions=suggestions,
-                provider="gemini",
-                model_version="gemini-temp-v1",
+                provider=ai_prov,
+                model_version=resp.model,
                 is_temporary=True,
                 latency_ms=resp.latency_ms,
                 prompt_tokens=resp.prompt_tokens,
                 output_tokens=resp.output_tokens,
                 raw_response=resp.text,
                 disclaimer=MEDICAL_DISCLAIMER,
-                ai_provider_label="Gemini AI (Temporary)",
+                ai_provider_label=ai_prov_label,
             )
 
     except Exception as exc:
-        logger.warning("Gemini symptom check failed: %s", exc)
+        logger.warning("Advanced AI symptom check failed: %s", exc)
 
     # Fallback stub
     return ProviderResult(

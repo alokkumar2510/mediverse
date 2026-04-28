@@ -1,20 +1,20 @@
 """
-MediVerse AI — Skin Analysis Provider (Gemini Vision)
+MediVerse AI — Skin Analysis Provider (Advanced AI Vision)
 =====================================================
-Uses Gemini multimodal vision to analyse dermoscopy/skin images.
+Uses Advanced AI multimodal vision to analyse dermoscopy/skin images.
 
 Strategy:
-  • Send image bytes + clinical prompt to Gemini Vision
+  • Send image bytes + clinical prompt to Advanced AI Vision
   • Return structured HAM10000-compatible classification
   • Fall back to "needs clinical review" if API fails
 
-Swap path: Replace _call_gemini_vision() with your ONNX EfficientNet-B3 engine.
+Swap path: Replace AI vision call with your ONNX EfficientNet-B3 engine.
 """
 from __future__ import annotations
 
 import logging
 
-from app.ai.gemini_client import get_client
+from app.ai.fallback_provider import get_ai_provider
 from app.ai.provider_types import ProviderResult, MEDICAL_DISCLAIMER
 
 logger = logging.getLogger("mediverse.ai.skin")
@@ -73,14 +73,14 @@ Respond ONLY with valid JSON. Be clinically conservative (err on caution)."""
 
 async def analyze_skin(image_bytes: bytes, filename: str = "") -> ProviderResult:
     """
-    Analyse skin lesion image using Gemini Vision.
+    Analyse skin lesion image using Advanced AI Vision.
     Returns ProviderResult compatible with SkinAnalysisResponse schema.
     """
     # Detect MIME type from magic bytes (imghdr removed in Python 3.13)
     mime_type = _detect_mime(image_bytes)
 
     try:
-        client = get_client()
+        client = get_ai_provider()
         resp = await client.analyze_image_json(
             image_bytes,
             _PROMPT,
@@ -109,6 +109,10 @@ async def analyze_skin(image_bytes: bytes, filename: str = "") -> ProviderResult
             if clinical_note:
                 care.insert(0, f"ℹ️ {clinical_note}")
 
+            ai_prov = getattr(resp, "ai_provider", "advanced_ai")
+
+            ai_prov_label = "NVIDIA NIM (Temporary)" if ai_prov == "nim" else "AI Inference (Temporary)"
+
             return ProviderResult(
                 primary_label=d.get("condition_label", HAM_CLASSES.get(code, code)),
                 confidence=float(d.get("confidence", 70.0)),
@@ -120,19 +124,19 @@ async def analyze_skin(image_bytes: bytes, filename: str = "") -> ProviderResult
                     {"factor": "Image Quality",        "value": d.get("quality_assessment", "unknown"), "impact": "low"},
                 ],
                 suggestions=care,
-                provider="gemini_vision",
-                model_version="gemini-vision-temp-v1",
+                provider="ai_vision",
+                model_version=resp.model,
                 is_temporary=True,
                 latency_ms=resp.latency_ms,
                 prompt_tokens=resp.prompt_tokens,
                 output_tokens=resp.output_tokens,
                 raw_response=resp.text,
                 disclaimer=MEDICAL_DISCLAIMER,
-                ai_provider_label="Gemini Vision AI (Temporary)",
+                ai_provider_label=ai_prov_label,
             )
 
     except Exception as exc:
-        logger.warning("Gemini skin analysis failed: %s", exc)
+        logger.warning("Advanced AI skin analysis failed: %s", exc)
 
     # Fallback: cannot analyse
     return ProviderResult(

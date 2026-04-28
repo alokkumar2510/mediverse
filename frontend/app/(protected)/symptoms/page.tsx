@@ -20,7 +20,7 @@ export default function SymptomsPage() {
         </div>
       }
       title="AI Symptom Checker"
-      description="Describe your symptoms in plain language. Our Gemini-powered triage assistant generates a preliminary differential diagnosis, urgency level, and specialist recommendation — powered by temporary AI while custom models are in training."
+      description="Describe your symptoms in plain language. Our AI-powered triage assistant generates a preliminary differential diagnosis, urgency level, and specialist recommendation — powered by temporary AI while custom models are in training."
       badgeBg="bg-violet-500/10 text-violet-400"
     >
       <SymptomsModule />

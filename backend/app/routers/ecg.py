@@ -59,13 +59,13 @@ async def analyze(
     tags=["Health"],
 )
 async def ecg_health() -> dict:
-    """Check Gemini ECG provider availability."""
+    """Check AI ECG provider availability."""
     import os
-    key_present = bool(os.environ.get("GEMINI_API_KEY"))
+    key_present = bool(os.environ.get("NVIDIA_NIM_API_KEY")) or bool(os.environ.get("GEMINI_API_KEY"))
     return {
-        "provider":     "gemini+signal",
+        "provider":     "ai+signal",
         "mode":         "temporary_ai_bridge",
-        "gemini_key":   "configured" if key_present else "MISSING — set GEMINI_API_KEY",
+        "ai_key":       "configured" if key_present else "MISSING — set NVIDIA_NIM_API_KEY or SECONDARY_AI_API_KEY",
         "signal_proc":  "scipy (always available)",
         "onnx_model":   "not loaded (custom model pending training)",
         "status":       "ready" if key_present else "degraded",

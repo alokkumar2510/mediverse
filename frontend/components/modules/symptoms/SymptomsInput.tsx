@@ -177,10 +177,10 @@ export function SymptomsInput({ onSubmit, isLoading }: SymptomsInputProps) {
           )}
         </motion.button>
 
-        {/* Gemini badge */}
+        {/* AI provider badge */}
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Activity className="h-3.5 w-3.5 text-violet-400" />
-          <span>Powered by Gemini AI · Not a medical diagnosis</span>
+          <span>Powered by Advanced AI · Not a medical diagnosis</span>
         </div>
       </form>
     </motion.div>

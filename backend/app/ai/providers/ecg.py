@@ -1,16 +1,16 @@
 """
-MediVerse AI — ECG Provider (Signal Analysis + Gemini Support)
+MediVerse AI — ECG Provider (Signal Analysis + AI Support)
 ==============================================================
 Strategy:
   1. Run deterministic signal analysis (R-peak detection, HR, quality)
      using scipy — lightweight, no model needed.
   2. Extract waveform features (heart rate, rhythm regularity, QRS duration hint)
-  3. Send feature text to Gemini for rhythm interpretation and clinical guidance.
+  3. Send feature text to Advanced AI for rhythm interpretation and clinical guidance.
 
-Swap path: Replace _call_gemini_ecg() with your ONNX ResNet1D/CNN-LSTM model.
+Swap path: Replace AI call with your ONNX ResNet1D/CNN-LSTM model.
 
-Note: Image-mode ECG (photo of paper ECG) → Gemini Vision.
-      Signal-mode ECG (.csv/.npy) → Signal analysis + Gemini text.
+Note: Image-mode ECG (photo of paper ECG) → Advanced AI Vision.
+      Signal-mode ECG (.csv/.npy) → Signal analysis + Advanced AI text.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from typing import Optional
 
 import numpy as np
 
-from app.ai.gemini_client import get_client
+from app.ai.fallback_provider import get_ai_provider
 from app.ai.provider_types import ProviderResult, MEDICAL_DISCLAIMER
 
 logger = logging.getLogger("mediverse.ai.ecg")
@@ -134,7 +134,7 @@ async def analyze_ecg_signal(signal: np.ndarray, fs: float = 500.0) -> ProviderR
     """
     Analyse 1D ECG signal.
     Step 1: signal features via scipy
-    Step 2: Gemini rhythm interpretation
+    Step 2: Advanced AI rhythm interpretation
     """
     feats = _signal_features(signal, fs)
 
@@ -175,7 +175,7 @@ Be clinically grounded. This is a SCREENING tool — not diagnostic.
 Flag needs_review=true for any non-sinus or high-risk rhythm."""
 
     try:
-        client = get_client()
+        client = get_ai_provider()
         resp = await client.generate_json(prompt, schema_hint=_SCHEMA)
 
         if resp.data:
@@ -195,6 +195,10 @@ Flag needs_review=true for any non-sinus or high-risk rhythm."""
             if prelim_notes:
                 suggestions.extend([f"📊 {n}" for n in prelim_notes])
 
+            ai_prov = getattr(resp, "ai_provider", "advanced_ai")
+
+            ai_prov_label = "NVIDIA NIM (Temporary)" if ai_prov == "nim" else "AI Inference (Temporary)"
+
             return ProviderResult(
                 primary_label=rhythm,
                 confidence=conf,
@@ -206,19 +210,19 @@ Flag needs_review=true for any non-sinus or high-risk rhythm."""
                     {"factor": "Signal Quality", "value": feats["signal_quality"], "impact": "moderate"},
                 ],
                 suggestions=suggestions,
-                provider="gemini+signal",
-                model_version="gemini-ecg-temp-v1",
+                provider="ai+signal",
+                model_version=resp.model,
                 is_temporary=True,
                 latency_ms=resp.latency_ms,
                 prompt_tokens=resp.prompt_tokens,
                 output_tokens=resp.output_tokens,
                 raw_response=resp.text,
                 disclaimer=ECG_DISCLAIMER,
-                ai_provider_label="Gemini AI + Signal Analysis (Temporary)",
+                ai_provider_label=ai_prov_label,
             ), feats
 
     except Exception as exc:
-        logger.warning("Gemini ECG analysis failed: %s", exc)
+        logger.warning("Advanced AI ECG analysis failed: %s", exc)
 
     # Fallback: signal features only, no ML
     fallback_rhythm = "Indeterminate"

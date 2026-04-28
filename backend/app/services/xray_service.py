@@ -1,7 +1,7 @@
 """
-MediVerse AI — X-Ray Analysis Service (Gemini Vision)
+MediVerse AI — X-Ray Analysis Service (AI Vision)
 ======================================================
-Replaces ONNX EfficientNet ensemble with Gemini Vision temporarily.
+Replaces ONNX EfficientNet ensemble with AI Vision temporarily.
 Service interface (analyze_xray) is UNCHANGED.
 """
 from __future__ import annotations
@@ -84,7 +84,7 @@ async def analyze_xray(
             "confidence":       confidence,
             "severity":         severity_label,
             "is_high_risk":     is_high_risk,
-            "model_name":       "Gemini Vision (Temporary)",
+            "model_name":       "AI Vision (Temporary)",
             "model_version":    result.model_version,
             "ai_provider":      result.provider,
             "is_temporary":     result.is_temporary,
@@ -119,9 +119,9 @@ async def analyze_xray(
         tta_uncertainty   = 0.0,
         image_quality     = quality,
         quality_warnings  = quality_warnings,
-        heatmap_b64       = None,   # Gemini doesn't generate Grad-CAM
+        heatmap_b64       = None,   # AI doesn't generate Grad-CAM
         image_hash        = "",
-        model_name        = "Gemini Vision (Temporary)",
+        model_name        = "AI Vision (Temporary)",
         model_version     = result.model_version,
         n_classes         = 17,
         report_id         = report_id,

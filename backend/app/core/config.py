@@ -6,7 +6,7 @@ from functools import lru_cache
 from typing import Any, List, Union
 import json
 
-from pydantic import field_validator
+from pydantic import field_validator, Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -89,20 +89,34 @@ class Settings(BaseSettings):
     # ── Feature flags ─────────────────────────────────────────────────
     ENABLE_DOCS: bool = True
 
-    # ── Gemini AI (Temporary ML Bridge) ───────────────────────────────
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL_TEXT: str = "gemini-2.5-flash"
-    GEMINI_MODEL_VISION: str = "gemini-2.5-flash"
-    GEMINI_MAX_OUTPUT_TOKENS: int = 2048
-    GEMINI_TEMPERATURE: float = 0.2
-    GEMINI_TIMEOUT_SEC: float = 30.0
-    GEMINI_MAX_RETRIES: int = 3
-    GEMINI_RPM: int = 15
+    # ── NVIDIA NIM (Primary AI Provider) ──────────────────────────────
+    NVIDIA_NIM_API_KEY: str = ""
+    NIM_MODEL_TEXT: str = "meta/llama-3.1-70b-instruct"
+    NIM_MODEL_VISION: str = "meta/llama-3.2-90b-vision-instruct"
+    NIM_MAX_OUTPUT_TOKENS: int = 2048
+    NIM_TEMPERATURE: float = 0.2
+    NIM_TIMEOUT_SEC: float = 60.0
+    NIM_MAX_RETRIES: int = 3
+    NIM_RPM: int = 60
+
+    # ── Secondary AI (Fallback / Deprecated) ─────────────────────────────
+    SECONDARY_AI_API_KEY: str = Field(default="", validation_alias=AliasChoices("SECONDARY_AI_API_KEY", "GEMINI_API_KEY"))
+    SECONDARY_AI_MODEL_TEXT: str = Field(default="gemini-2.5-flash", validation_alias=AliasChoices("SECONDARY_AI_MODEL_TEXT", "GEMINI_MODEL_TEXT"))
+    SECONDARY_AI_MODEL_VISION: str = Field(default="gemini-2.5-flash", validation_alias=AliasChoices("SECONDARY_AI_MODEL_VISION", "GEMINI_MODEL_VISION"))
+    SECONDARY_AI_MAX_OUTPUT_TOKENS: int = Field(default=2048, validation_alias=AliasChoices("SECONDARY_AI_MAX_OUTPUT_TOKENS", "GEMINI_MAX_OUTPUT_TOKENS"))
+    SECONDARY_AI_TEMPERATURE: float = Field(default=0.2, validation_alias=AliasChoices("SECONDARY_AI_TEMPERATURE", "GEMINI_TEMPERATURE"))
+    SECONDARY_AI_TIMEOUT_SEC: float = Field(default=30.0, validation_alias=AliasChoices("SECONDARY_AI_TIMEOUT_SEC", "GEMINI_TIMEOUT_SEC"))
+    SECONDARY_AI_MAX_RETRIES: int = Field(default=3, validation_alias=AliasChoices("SECONDARY_AI_MAX_RETRIES", "GEMINI_MAX_RETRIES"))
+    SECONDARY_AI_RPM: int = Field(default=15, validation_alias=AliasChoices("SECONDARY_AI_RPM", "GEMINI_RPM"))
 
     # ── Derived helpers ───────────────────────────────────────────────
     @property
-    def gemini_configured(self) -> bool:
-        return bool(self.GEMINI_API_KEY)
+    def nim_configured(self) -> bool:
+        return bool(self.NVIDIA_NIM_API_KEY)
+
+    @property
+    def secondary_ai_configured(self) -> bool:
+        return bool(self.SECONDARY_AI_API_KEY)
 
     @property
     def is_production(self) -> bool:

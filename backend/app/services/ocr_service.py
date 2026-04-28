@@ -98,20 +98,20 @@ async def run_ocr(
         result_dict["ocr_avg_confidence"] = round(avg_conf, 3)
         result_dict["raw_text"] = raw_text
 
-        # ── Step 3b: Gemini enhancement (corrects OCR errors, enriches data) ────
-        gemini_data: dict | None = None
+        # ── Step 3b: AI enhancement (corrects OCR errors, enriches data) ────
+        ai_data: dict | None = None
         try:
-            gemini_data = await enhance_prescription_ocr(raw_text, ocr_confidence=avg_conf)
-        except Exception as gem_exc:
-            logger.warning("Gemini OCR enhancement skipped: %s", gem_exc)
+            ai_data = await enhance_prescription_ocr(raw_text, ocr_confidence=avg_conf)
+        except Exception as ai_exc:
+            logger.warning("AI OCR enhancement skipped: %s", ai_exc)
 
-        # ── Step 4: Build response (prefer Gemini data if available) ──────────
+        # ── Step 4: Build response (prefer AI data if available) ──────────
         medicines_out: list[OcrMedicine] = []
-        gemini_used = False
+        ai_used = False
 
-        if gemini_data and gemini_data.get("medicines"):
-            gemini_used = True
-            for m in gemini_data["medicines"]:
+        if ai_data and ai_data.get("medicines"):
+            ai_used = True
+            for m in ai_data["medicines"]:
                 medicines_out.append(OcrMedicine(
                     name=m.get("name", "Unknown"),
                     raw_name=m.get("raw_name", m.get("name", "")),
@@ -124,13 +124,13 @@ async def run_ocr(
                     instructions=m.get("instructions"),
                     confidence=float(m.get("confidence", 0.85)),
                 ))
-            doctor_name  = gemini_data.get("doctor_name")  or parsed.doctor_name
-            patient_name = gemini_data.get("patient_name") or parsed.patient_name
-            date         = gemini_data.get("date")         or parsed.date
-            notes        = gemini_data.get("notes", [])    or parsed.notes
-            warnings     = gemini_data.get("warnings", []) + parsed.warnings
-            overall_conf = float(gemini_data.get("overall_confidence", parsed.overall_confidence))
-            low_conf     = gemini_data.get("low_confidence", parsed.low_confidence)
+            doctor_name  = ai_data.get("doctor_name")  or parsed.doctor_name
+            patient_name = ai_data.get("patient_name") or parsed.patient_name
+            date         = ai_data.get("date")         or parsed.date
+            notes        = ai_data.get("notes", [])    or parsed.notes
+            warnings     = ai_data.get("warnings", []) + parsed.warnings
+            overall_conf = float(ai_data.get("overall_confidence", parsed.overall_confidence))
+            low_conf     = ai_data.get("low_confidence", parsed.low_confidence)
         else:
             for m in parsed.medicines:
                 medicines_out.append(OcrMedicine(
@@ -153,7 +153,7 @@ async def run_ocr(
             overall_conf = parsed.overall_confidence
             low_conf     = parsed.low_confidence
 
-        ocr_engine_label = f"{engine}+gemini" if gemini_used else engine
+        ocr_engine_label = f"{engine}+ai" if ai_used else engine
 
         response = OcrPrescriptionResponse(
             medicines=medicines_out,

@@ -131,7 +131,7 @@ export function SymptomsResult({ result, onReset }: SymptomsResultProps) {
       {/* AI badge */}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold">Triage Result</h2>
-        <AIProviderBadge providerLabel="Gemini AI (Temporary)" />
+        <AIProviderBadge providerLabel="AI Inference (Temporary)" />
       </div>
 
       {/* Urgency banner */}

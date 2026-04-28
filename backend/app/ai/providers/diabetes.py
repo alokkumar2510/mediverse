@@ -1,20 +1,20 @@
 """
-MediVerse AI — Diabetes Provider (Gemini + Rule Engine Hybrid)
+MediVerse AI — Diabetes Provider (AI + Rule Engine Hybrid)
 ==============================================================
 Strategy:
   1. Run deterministic rule engine on biomarkers → risk score (fast, free, reliable)
-  2. Call Gemini with the biomarkers + rule score → AI-enhanced explanation,
+  2. Call Advanced AI with the biomarkers + rule score → AI-enhanced explanation,
      personalised recommendations, and confidence calibration.
 
 Swap path:
-  Replace this file (or the _call_gemini function) with your XGBoost inference.
+  Replace this file (or the AI call) with your XGBoost inference.
   The service layer is unchanged.
 """
 from __future__ import annotations
 
 import logging
 
-from app.ai.gemini_client import get_client
+from app.ai.fallback_provider import get_ai_provider
 from app.ai.provider_types import ProviderResult, MEDICAL_DISCLAIMER
 
 logger = logging.getLogger("mediverse.ai.diabetes")
@@ -74,7 +74,7 @@ def _tier(score: float) -> str:
     return "high"
 
 
-# ── Gemini prompt ──────────────────────────────────────────────────────────────
+# ── AI prompt ──────────────────────────────────────────────────────────────
 _SCHEMA = """{
   "risk_pct": <number 0-100>,
   "risk_tier": "<low|moderate|high>",
@@ -84,21 +84,21 @@ _SCHEMA = """{
   ],
   "suggestions": ["<actionable recommendation>"],
   "screening_recommended": <true|false>,
-  "algorithm": "Gemini-2.0 + Rule Engine Hybrid",
-  "model_version": "gemini-temp-v1"
+  "algorithm": "AI + Rule Engine Hybrid",
+  "model_version": "hybrid-temp-v1"
 }"""
 
 
 async def predict_diabetes(inputs: dict) -> ProviderResult:
     """
     Hybrid diabetes prediction:
-    Rule engine → Gemini enhancement → ProviderResult
+    Rule engine → AI enhancement → ProviderResult
     """
     # Step 1: deterministic rule engine
     rule_score, rule_factors = _rule_engine(inputs)
     rule_tier = _tier(rule_score)
 
-    # Step 2: Gemini enhancement
+    # Step 2: AI enhancement
     prompt = f"""You are a clinical AI assistant supporting a diabetes risk screening tool.
 
 Patient biomarkers:
@@ -124,39 +124,42 @@ Be precise, clinically grounded, and use plain language understandable to patien
 Do NOT diagnose diabetes — this is a screening tool."""
 
     try:
-        client = get_client()
-        resp = await client.generate_json(prompt, schema_hint=_SCHEMA)
+        provider = get_ai_provider()
+        resp = await provider.generate_json(prompt, schema_hint=_SCHEMA)
 
         if resp.data:
             d = resp.data
-            # Merge rule factors if Gemini didn't provide enough
-            gemini_factors = d.get("top_risk_factors", [])
-            if len(gemini_factors) < 2:
-                gemini_factors = [
+            # Merge rule factors if AI didn't provide enough
+            ai_factors = d.get("top_risk_factors", [])
+            if len(ai_factors) < 2:
+                ai_factors = [
                     {"factor": f["factor"], "value": f["value"], "impact": f["impact"], "advice": None}
                     for f in rule_factors[:3]
                 ]
+                
+            provider_tag = resp.ai_provider.upper() if hasattr(resp, "ai_provider") else "AI"
+            ai_label = f"{provider_tag} + Rule Engine"
 
             return ProviderResult(
                 primary_label=f"Diabetes Risk: {d.get('risk_tier', rule_tier).capitalize()}",
                 confidence=float(d.get("confidence", 70.0)),
                 risk_tier=d.get("risk_tier", rule_tier),
                 conditions=[{"name": f"Diabetes Risk", "probability": float(d.get("risk_pct", rule_score))}],
-                factors=gemini_factors,
+                factors=ai_factors,
                 suggestions=d.get("suggestions", []),
                 provider="hybrid",
-                model_version=d.get("model_version", "gemini-temp-v1"),
+                model_version=d.get("model_version", f"{resp.model}"),
                 is_temporary=True,
                 latency_ms=resp.latency_ms,
                 prompt_tokens=resp.prompt_tokens,
                 output_tokens=resp.output_tokens,
                 raw_response=resp.text,
                 disclaimer=MEDICAL_DISCLAIMER,
-                ai_provider_label="Gemini AI + Rule Engine (Temporary)",
+                ai_provider_label=ai_label,
             )
 
     except Exception as exc:
-        logger.warning("Gemini diabetes call failed, falling back to rule engine: %s", exc)
+        logger.warning("AI diabetes call failed, falling back to rule engine: %s", exc)
 
     # Fallback: pure rule engine
     suggestions = {
@@ -191,5 +194,5 @@ Do NOT diagnose diabetes — this is a screening tool."""
         model_version="rule-engine-v1",
         is_temporary=True,
         disclaimer=MEDICAL_DISCLAIMER,
-        ai_provider_label="Rule Engine (Gemini unavailable — Temporary)",
+        ai_provider_label="Rule Engine (AI unavailable — Temporary)",
     )
