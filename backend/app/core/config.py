@@ -91,8 +91,8 @@ class Settings(BaseSettings):
 
     # ── Gemini AI (Temporary ML Bridge) ───────────────────────────────
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL_TEXT: str = "gemini-2.0-flash"
-    GEMINI_MODEL_VISION: str = "gemini-2.0-flash"
+    GEMINI_MODEL_TEXT: str = "gemini-2.5-flash"
+    GEMINI_MODEL_VISION: str = "gemini-2.5-flash"
     GEMINI_MAX_OUTPUT_TOKENS: int = 2048
     GEMINI_TEMPERATURE: float = 0.2
     GEMINI_TIMEOUT_SEC: float = 30.0

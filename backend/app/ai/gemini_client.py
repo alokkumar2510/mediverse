@@ -29,14 +29,16 @@ from google.api_core.exceptions import ResourceExhausted, ServiceUnavailable
 logger = logging.getLogger("mediverse.gemini")
 
 # ── Config from environment ────────────────────────────────────────────────────
-_API_KEY     = os.getenv("GEMINI_API_KEY", "")
-_MODEL_TEXT  = os.getenv("GEMINI_MODEL_TEXT",   "gemini-2.0-flash")
-_MODEL_VIS   = os.getenv("GEMINI_MODEL_VISION", "gemini-2.0-flash")
-_MAX_TOKENS  = int(os.getenv("GEMINI_MAX_OUTPUT_TOKENS", "2048"))
-_TEMP        = float(os.getenv("GEMINI_TEMPERATURE",  "0.2"))
-_TIMEOUT     = float(os.getenv("GEMINI_TIMEOUT_SEC",  "30"))
-_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES",    "3"))
-_RPM_LIMIT   = int(os.getenv("GEMINI_RPM",            "15"))   # free tier = 15 RPM
+from app.core.config import settings
+
+_API_KEY     = settings.GEMINI_API_KEY
+_MODEL_TEXT  = settings.GEMINI_MODEL_TEXT
+_MODEL_VIS   = settings.GEMINI_MODEL_VISION
+_MAX_TOKENS  = settings.GEMINI_MAX_OUTPUT_TOKENS
+_TEMP        = settings.GEMINI_TEMPERATURE
+_TIMEOUT     = settings.GEMINI_TIMEOUT_SEC
+_MAX_RETRIES = settings.GEMINI_MAX_RETRIES
+_RPM_LIMIT   = settings.GEMINI_RPM
 
 
 @dataclass
