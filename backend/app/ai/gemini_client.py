@@ -24,7 +24,7 @@ from typing import Any
 
 from google import genai
 from google.genai import types
-from google.api_core.exceptions import ResourceExhausted, ServiceUnavailable
+from google.genai.errors import APIError
 
 logger = logging.getLogger("mediverse.gemini")
 
@@ -157,13 +157,10 @@ class GeminiClient:
             t0 = time.monotonic()
             try:
                 resp = await asyncio.wait_for(
-                    asyncio.get_event_loop().run_in_executor(
-                        None,
-                        lambda: self._client.models.generate_content(
-                            model    = model,
-                            contents = contents,
-                            config   = config,
-                        ),
+                    self._client.aio.models.generate_content(
+                        model    = model,
+                        contents = contents,
+                        config   = config,
                     ),
                     timeout=_TIMEOUT,
                 )
@@ -195,14 +192,19 @@ class GeminiClient:
                     latency_ms    = round(latency, 1),
                 )
 
-            except (ResourceExhausted, ServiceUnavailable) as exc:
-                wait = 2 ** attempt
-                logger.warning(
-                    "Gemini rate-limited/unavailable (attempt %d/%d) — retry in %ds: %s",
-                    attempt, _MAX_RETRIES, wait, exc,
-                )
-                last_exc = exc
-                await asyncio.sleep(wait)
+            except APIError as exc:
+                if exc.code in (429, 503):
+                    wait = 2 ** attempt
+                    logger.warning(
+                        "Gemini rate-limited/unavailable (attempt %d/%d) — retry in %ds: %s",
+                        attempt, _MAX_RETRIES, wait, exc,
+                    )
+                    last_exc = exc
+                    await asyncio.sleep(wait)
+                else:
+                    logger.exception("Gemini API error (attempt %d): %s", attempt, exc)
+                    last_exc = exc
+                    break
 
             except asyncio.TimeoutError:
                 logger.warning(
