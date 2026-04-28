@@ -52,9 +52,16 @@ def do_run_migrations(connection):
 
 async def run_migrations_online() -> None:
     """Run in 'online' mode — connect and migrate."""
+    db_url = settings.DATABASE_URL
+    connect_args = {}
+    if not db_url.lower().startswith("sqlite"):
+        db_url += "&prepared_statement_cache_size=0" if "?" in db_url else "?prepared_statement_cache_size=0"
+        connect_args["statement_cache_size"] = 0
+
     connectable = create_async_engine(
-        settings.DATABASE_URL,
+        db_url,
         poolclass=pool.NullPool,  # single-use for migration
+        connect_args=connect_args,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
