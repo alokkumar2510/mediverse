@@ -26,7 +26,15 @@ from app.models import (
 settings = get_settings()
 
 # ── Engine ────────────────────────────────────────────────────────────────────
-engine = create_async_engine(settings.DATABASE_URL, echo=False)
+db_url = settings.DATABASE_URL
+if not db_url.lower().startswith("sqlite"):
+    db_url += "&prepared_statement_cache_size=0" if "?" in db_url else "?prepared_statement_cache_size=0"
+
+engine = create_async_engine(
+    db_url,
+    echo=False,
+    connect_args={"statement_cache_size": 0} if not db_url.lower().startswith("sqlite") else {},
+)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
