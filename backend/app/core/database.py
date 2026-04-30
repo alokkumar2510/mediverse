@@ -24,6 +24,8 @@ convention = {
 }
 
 # ── Engine ────────────────────────────────────────────────────────────────────
+import uuid
+
 def _engine_kwargs() -> dict:
     """Return extra engine kwargs — omit pool settings for SQLite (used in tests)."""
     url_lower = settings.DATABASE_URL.lower()
@@ -37,15 +39,12 @@ def _engine_kwargs() -> dict:
         "pool_recycle": 3600,
         "connect_args": {
             "statement_cache_size": 0,
+            "prepared_statement_name_func": lambda: f"__asyncpg_{uuid.uuid4()}__",
         },
     }
 
-_db_url = settings.DATABASE_URL
-if not _db_url.lower().startswith("sqlite"):
-    _db_url += "&prepared_statement_cache_size=0" if "?" in _db_url else "?prepared_statement_cache_size=0"
-
 engine = create_async_engine(
-    _db_url,
+    settings.DATABASE_URL,
     echo=settings.DEBUG,
     **_engine_kwargs(),
 )
