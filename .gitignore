@@ -43,6 +43,8 @@ out/
 frontend/.env.local
 frontend/.env.development.local
 frontend/.env.test.local
+frontend/.open-next/
+frontend/.wrangler/
 
 # ── Test artifacts ────────────────────────────────────────────────────────────
 .pytest_cache/

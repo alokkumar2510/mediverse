@@ -60,9 +60,21 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? localStorage : ({} as Storage)
-      ),
+      storage: createJSONStorage(() => {
+        // In SSR / Cloudflare edge context there is no window/localStorage.
+        // Return a no-op storage so Zustand persist doesn't throw.
+        if (typeof window === "undefined") {
+          return {
+            getItem: () => null,
+            setItem: () => undefined,
+            removeItem: () => undefined,
+            length: 0,
+            clear: () => undefined,
+            key: () => null,
+          } as unknown as Storage;
+        }
+        return localStorage;
+      }),
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,

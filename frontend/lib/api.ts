@@ -33,9 +33,16 @@ function processQueue(error: unknown, token: string | null = null) {
 
 // ─── Request interceptor: attach Bearer token ───────────────────────────────
 function attachToken(config: InternalAxiosRequestConfig) {
-  const token = useAuthStore.getState().accessToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Guard: useAuthStore relies on localStorage which is unavailable in
+  // SSR / Cloudflare edge context — wrap in try/catch to prevent crashing.
+  try {
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch {
+    // No localStorage in edge runtime — token will be missing, which is fine
+    // for unauthenticated endpoints (login/register).
   }
   return config;
 }
@@ -67,10 +74,23 @@ async function handle401(error: AxiosError) {
   original._retry = true;
   isRefreshing = true;
 
-  const { refreshToken, setTokens, logout } = useAuthStore.getState();
+  let refreshToken: string | null = null;
+  let setTokens: ((a: string, r: string) => void) | null = null;
+  let logout: (() => void) | null = null;
+
+  try {
+    const state = useAuthStore.getState();
+    refreshToken = state.refreshToken;
+    setTokens = state.setTokens;
+    logout = state.logout;
+  } catch {
+    // Edge runtime — can't access store
+    isRefreshing = false;
+    return Promise.reject(error);
+  }
 
   if (!refreshToken) {
-    logout();
+    if (logout) logout();
     if (typeof window !== "undefined") window.location.href = "/login";
     return Promise.reject(error);
   }
@@ -81,7 +101,7 @@ async function handle401(error: AxiosError) {
     });
     const newAccessToken: string = data.access_token;
     const newRefreshToken: string = data.refresh_token ?? refreshToken;
-    setTokens(newAccessToken, newRefreshToken);
+    setTokens?.(newAccessToken, newRefreshToken);
     // Keep the cookie in sync so the Edge middleware sees the new token
     const { updateAuthCookies } = await import("@/lib/auth");
     updateAuthCookies(newAccessToken);
@@ -90,7 +110,7 @@ async function handle401(error: AxiosError) {
     return api(original);
   } catch (refreshError) {
     processQueue(refreshError, null);
-    logout();
+    if (logout) logout();
     if (typeof window !== "undefined") window.location.href = "/login";
     return Promise.reject(refreshError);
   } finally {
@@ -123,10 +143,35 @@ export const apiPostForm = <T>(url: string, formData: FormData) =>
 
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    const detail = error.response?.data?.detail;
+    // No response at all = genuine network/CORS/cold-start issue
+    if (!error.response) {
+      return "Unable to reach the server. Please check your connection or try again in a moment.";
+    }
+
+    const data = error.response.data;
+
+    // FastAPI / Pydantic validation errors (422)
+    const detail = data?.detail;
     if (typeof detail === "string") return detail;
-    if (Array.isArray(detail)) return detail.map((d) => d.msg).join(". ");
-    return error.message;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((d) => {
+          const field = d.loc?.slice(1).join(" → ") ?? "";
+          return field ? `${field}: ${d.msg}` : d.msg;
+        })
+        .join(". ");
+    }
+
+    // Custom error shape from our exception handlers
+    const errors = data?.errors;
+    if (Array.isArray(errors) && errors.length > 0) {
+      return errors.map((e: { message?: string }) => e.message).filter(Boolean).join(". ");
+    }
+
+    // HTTP-level message fallback
+    if (data?.message) return data.message;
+
+    return error.message || "An unexpected error occurred.";
   }
   if (error instanceof Error) return error.message;
   return "An unexpected error occurred.";
